@@ -6,14 +6,13 @@
 #
 Name     : qemu
 Version  : 3.1.0
-Release  : 107
+Release  : 109
 URL      : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source0  : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source99 : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz.sig
 Summary  : A lightweight multi-platform, multi-architecture disassembly framework
 Group    : Development/Tools
 License  : Apache-2.0 GPL-2.0 GPL-2.0+ GPL-3.0 LGPL-2.0+ LGPL-2.1 MIT
-Requires: qemu-bin = %{version}-%{release}
 Requires: qemu-libexec = %{version}-%{release}
 Requires: qemu-setuid = %{version}-%{release}
 Requires: curl
@@ -70,24 +69,6 @@ Patch1: configure.patch
 Capstone is a disassembly framework with the target of becoming the ultimate
 disasm engine for binary analysis and reversing in the security community.
 
-%package bin
-Summary: bin components for the qemu package.
-Group: Binaries
-Requires: qemu-libexec = %{version}-%{release}
-Requires: qemu-setuid = %{version}-%{release}
-
-%description bin
-bin components for the qemu package.
-
-
-%package extras
-Summary: extras components for the qemu package.
-Group: Default
-
-%description extras
-extras components for the qemu package.
-
-
 %package libexec
 Summary: libexec components for the qemu package.
 Group: Default
@@ -107,26 +88,28 @@ setuid components for the qemu package.
 %prep
 %setup -q -n qemu-3.1.0
 %patch1 -p1
-pushd ..
-cp -a qemu-3.1.0 buildavx2
-popd
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1547137678
-export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math -fstack-protector-strong -mzero-caller-saved-regs=used "
-export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math -fstack-protector-strong -mzero-caller-saved-regs=used "
-export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math -fstack-protector-strong -mzero-caller-saved-regs=used "
-export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semantic-interposition -fno-trapping-math -fstack-protector-strong -mzero-caller-saved-regs=used "
-%configure --disable-static --prefix=/opt/qemu-ms \
+export SOURCE_DATE_EPOCH=1547143473
+export CFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
+export FCFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
+export FFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
+export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
+%configure --disable-static --prefix=/opt/qemu-ms/ \
+--mandir=/opt/qemu-ms/man \
+--datadir=/opt/qemu-ms/data \
+--docdir=/opt/qemu-ms/doc \
+--bindir=/opt/qemu-ms/bin \
+--libdir=/opt/qemu-ms/lib \
+--sysconfdir=/opt/qemu-ms/etc \
+--localstatedir=/opt/qemu-ms/state \
 --disable-sdl \
 --disable-strip \
---with-confsuffix="ms" \
 --enable-debug \
---extra-cflags="-O3" \
 --python=/usr/bin/python \
 --enable-gtk \
 --enable-vnc \
@@ -150,44 +133,8 @@ export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -fno-math-errno -fno-semanti
 --enable-rdma \
 --enable-modules \
 --enable-vhdx
-make
+make  %{?_smp_mflags}
 
-unset PKG_CONFIG_PATH
-pushd ../buildavx2/
-export CFLAGS="$CFLAGS -m64 -march=haswell"
-export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
-export LDFLAGS="$LDFLAGS -m64 -march=haswell"
-%configure --disable-static --prefix=/opt/qemu-ms \
---disable-sdl \
---disable-strip \
---with-confsuffix="ms" \
---enable-debug \
---extra-cflags="-O3" \
---python=/usr/bin/python \
---enable-gtk \
---enable-vnc \
---enable-kvm \
---target-list='x86_64-softmmu x86_64-linux-user' \
---enable-spice \
---enable-rbd \
---enable-attr \
---enable-cap-ng \
---enable-virtfs \
---enable-vhost-net \
---enable-usb-redir \
---enable-seccomp \
---enable-linux-aio \
---enable-tpm \
---enable-opengl \
---enable-libiscsi \
---enable-coroutine-pool \
---enable-jemalloc \
---enable-numa \
---enable-rdma \
---enable-modules \
---enable-vhdx --enable-avx2
-make
-popd
 %check
 export LANG=C
 export http_proxy=http://127.0.0.1:9/
@@ -196,15 +143,118 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make check || :
 
 %install
-export SOURCE_DATE_EPOCH=1547137678
+export SOURCE_DATE_EPOCH=1547143473
 rm -rf %{buildroot}
-pushd ../buildavx2/
-%make_install_avx2
-popd
 %make_install
 
 %files
 %defattr(-,root,root,-)
+/opt/qemu-ms/bin/ivshmem-client
+/opt/qemu-ms/bin/ivshmem-server
+/opt/qemu-ms/bin/qemu-edid
+/opt/qemu-ms/bin/qemu-ga
+/opt/qemu-ms/bin/qemu-img
+/opt/qemu-ms/bin/qemu-io
+/opt/qemu-ms/bin/qemu-keymap
+/opt/qemu-ms/bin/qemu-nbd
+/opt/qemu-ms/bin/qemu-pr-helper
+/opt/qemu-ms/bin/qemu-system-x86_64
+/opt/qemu-ms/bin/qemu-x86_64
+/opt/qemu-ms/bin/virtfs-proxy-helper
+/opt/qemu-ms/data/qemu/QEMU,cgthree.bin
+/opt/qemu-ms/data/qemu/QEMU,tcx.bin
+/opt/qemu-ms/data/qemu/bamboo.dtb
+/opt/qemu-ms/data/qemu/bios-256k.bin
+/opt/qemu-ms/data/qemu/bios.bin
+/opt/qemu-ms/data/qemu/canyonlands.dtb
+/opt/qemu-ms/data/qemu/efi-e1000.rom
+/opt/qemu-ms/data/qemu/efi-e1000e.rom
+/opt/qemu-ms/data/qemu/efi-eepro100.rom
+/opt/qemu-ms/data/qemu/efi-ne2k_pci.rom
+/opt/qemu-ms/data/qemu/efi-pcnet.rom
+/opt/qemu-ms/data/qemu/efi-rtl8139.rom
+/opt/qemu-ms/data/qemu/efi-virtio.rom
+/opt/qemu-ms/data/qemu/efi-vmxnet3.rom
+/opt/qemu-ms/data/qemu/hppa-firmware.img
+/opt/qemu-ms/data/qemu/keymaps/ar
+/opt/qemu-ms/data/qemu/keymaps/bepo
+/opt/qemu-ms/data/qemu/keymaps/common
+/opt/qemu-ms/data/qemu/keymaps/cz
+/opt/qemu-ms/data/qemu/keymaps/da
+/opt/qemu-ms/data/qemu/keymaps/de
+/opt/qemu-ms/data/qemu/keymaps/de-ch
+/opt/qemu-ms/data/qemu/keymaps/en-gb
+/opt/qemu-ms/data/qemu/keymaps/en-us
+/opt/qemu-ms/data/qemu/keymaps/es
+/opt/qemu-ms/data/qemu/keymaps/et
+/opt/qemu-ms/data/qemu/keymaps/fi
+/opt/qemu-ms/data/qemu/keymaps/fo
+/opt/qemu-ms/data/qemu/keymaps/fr
+/opt/qemu-ms/data/qemu/keymaps/fr-be
+/opt/qemu-ms/data/qemu/keymaps/fr-ca
+/opt/qemu-ms/data/qemu/keymaps/fr-ch
+/opt/qemu-ms/data/qemu/keymaps/hr
+/opt/qemu-ms/data/qemu/keymaps/hu
+/opt/qemu-ms/data/qemu/keymaps/is
+/opt/qemu-ms/data/qemu/keymaps/it
+/opt/qemu-ms/data/qemu/keymaps/ja
+/opt/qemu-ms/data/qemu/keymaps/lt
+/opt/qemu-ms/data/qemu/keymaps/lv
+/opt/qemu-ms/data/qemu/keymaps/mk
+/opt/qemu-ms/data/qemu/keymaps/modifiers
+/opt/qemu-ms/data/qemu/keymaps/nl
+/opt/qemu-ms/data/qemu/keymaps/nl-be
+/opt/qemu-ms/data/qemu/keymaps/no
+/opt/qemu-ms/data/qemu/keymaps/pl
+/opt/qemu-ms/data/qemu/keymaps/pt
+/opt/qemu-ms/data/qemu/keymaps/pt-br
+/opt/qemu-ms/data/qemu/keymaps/ru
+/opt/qemu-ms/data/qemu/keymaps/sl
+/opt/qemu-ms/data/qemu/keymaps/sv
+/opt/qemu-ms/data/qemu/keymaps/th
+/opt/qemu-ms/data/qemu/keymaps/tr
+/opt/qemu-ms/data/qemu/kvmvapic.bin
+/opt/qemu-ms/data/qemu/linuxboot.bin
+/opt/qemu-ms/data/qemu/linuxboot_dma.bin
+/opt/qemu-ms/data/qemu/multiboot.bin
+/opt/qemu-ms/data/qemu/openbios-ppc
+/opt/qemu-ms/data/qemu/openbios-sparc32
+/opt/qemu-ms/data/qemu/openbios-sparc64
+/opt/qemu-ms/data/qemu/palcode-clipper
+/opt/qemu-ms/data/qemu/petalogix-ml605.dtb
+/opt/qemu-ms/data/qemu/petalogix-s3adsp1800.dtb
+/opt/qemu-ms/data/qemu/ppc_rom.bin
+/opt/qemu-ms/data/qemu/pxe-e1000.rom
+/opt/qemu-ms/data/qemu/pxe-eepro100.rom
+/opt/qemu-ms/data/qemu/pxe-ne2k_pci.rom
+/opt/qemu-ms/data/qemu/pxe-pcnet.rom
+/opt/qemu-ms/data/qemu/pxe-rtl8139.rom
+/opt/qemu-ms/data/qemu/pxe-virtio.rom
+/opt/qemu-ms/data/qemu/qemu-icon.bmp
+/opt/qemu-ms/data/qemu/qemu_logo_no_text.svg
+/opt/qemu-ms/data/qemu/qemu_vga.ndrv
+/opt/qemu-ms/data/qemu/s390-ccw.img
+/opt/qemu-ms/data/qemu/s390-netboot.img
+/opt/qemu-ms/data/qemu/sgabios.bin
+/opt/qemu-ms/data/qemu/skiboot.lid
+/opt/qemu-ms/data/qemu/slof.bin
+/opt/qemu-ms/data/qemu/spapr-rtas.bin
+/opt/qemu-ms/data/qemu/trace-events-all
+/opt/qemu-ms/data/qemu/u-boot-sam460-20100605.bin
+/opt/qemu-ms/data/qemu/u-boot.e500
+/opt/qemu-ms/data/qemu/vgabios-bochs-display.bin
+/opt/qemu-ms/data/qemu/vgabios-cirrus.bin
+/opt/qemu-ms/data/qemu/vgabios-qxl.bin
+/opt/qemu-ms/data/qemu/vgabios-ramfb.bin
+/opt/qemu-ms/data/qemu/vgabios-stdvga.bin
+/opt/qemu-ms/data/qemu/vgabios-virtio.bin
+/opt/qemu-ms/data/qemu/vgabios-vmware.bin
+/opt/qemu-ms/data/qemu/vgabios.bin
+/opt/qemu-ms/lib/qemu/audio-oss.so
+/opt/qemu-ms/lib/qemu/block-curl.so
+/opt/qemu-ms/lib/qemu/block-iscsi.so
+/opt/qemu-ms/lib/qemu/block-rbd.so
+/opt/qemu-ms/lib/qemu/ui-gtk.so
 /opt/qemu-ms/share/locale/bg/LC_MESSAGES/qemu.mo
 /opt/qemu-ms/share/locale/de_DE/LC_MESSAGES/qemu.mo
 /opt/qemu-ms/share/locale/fr_FR/LC_MESSAGES/qemu.mo
@@ -212,131 +262,6 @@ popd
 /opt/qemu-ms/share/locale/it/LC_MESSAGES/qemu.mo
 /opt/qemu-ms/share/locale/tr/LC_MESSAGES/qemu.mo
 /opt/qemu-ms/share/locale/zh_CN/LC_MESSAGES/qemu.mo
-/usr/lib64ms/audio-oss.so
-/usr/lib64ms/block-curl.so
-/usr/lib64ms/block-iscsi.so
-/usr/lib64ms/block-rbd.so
-/usr/lib64ms/ui-gtk.so
-/usr/sharems/QEMU,cgthree.bin
-/usr/sharems/QEMU,tcx.bin
-/usr/sharems/bamboo.dtb
-/usr/sharems/bios-256k.bin
-/usr/sharems/bios.bin
-/usr/sharems/canyonlands.dtb
-/usr/sharems/efi-e1000.rom
-/usr/sharems/efi-e1000e.rom
-/usr/sharems/efi-eepro100.rom
-/usr/sharems/efi-ne2k_pci.rom
-/usr/sharems/efi-pcnet.rom
-/usr/sharems/efi-rtl8139.rom
-/usr/sharems/efi-virtio.rom
-/usr/sharems/efi-vmxnet3.rom
-/usr/sharems/hppa-firmware.img
-/usr/sharems/keymaps/ar
-/usr/sharems/keymaps/bepo
-/usr/sharems/keymaps/common
-/usr/sharems/keymaps/cz
-/usr/sharems/keymaps/da
-/usr/sharems/keymaps/de
-/usr/sharems/keymaps/de-ch
-/usr/sharems/keymaps/en-gb
-/usr/sharems/keymaps/en-us
-/usr/sharems/keymaps/es
-/usr/sharems/keymaps/et
-/usr/sharems/keymaps/fi
-/usr/sharems/keymaps/fo
-/usr/sharems/keymaps/fr
-/usr/sharems/keymaps/fr-be
-/usr/sharems/keymaps/fr-ca
-/usr/sharems/keymaps/fr-ch
-/usr/sharems/keymaps/hr
-/usr/sharems/keymaps/hu
-/usr/sharems/keymaps/is
-/usr/sharems/keymaps/it
-/usr/sharems/keymaps/ja
-/usr/sharems/keymaps/lt
-/usr/sharems/keymaps/lv
-/usr/sharems/keymaps/mk
-/usr/sharems/keymaps/modifiers
-/usr/sharems/keymaps/nl
-/usr/sharems/keymaps/nl-be
-/usr/sharems/keymaps/no
-/usr/sharems/keymaps/pl
-/usr/sharems/keymaps/pt
-/usr/sharems/keymaps/pt-br
-/usr/sharems/keymaps/ru
-/usr/sharems/keymaps/sl
-/usr/sharems/keymaps/sv
-/usr/sharems/keymaps/th
-/usr/sharems/keymaps/tr
-/usr/sharems/kvmvapic.bin
-/usr/sharems/linuxboot.bin
-/usr/sharems/linuxboot_dma.bin
-/usr/sharems/multiboot.bin
-/usr/sharems/openbios-ppc
-/usr/sharems/openbios-sparc32
-/usr/sharems/openbios-sparc64
-/usr/sharems/palcode-clipper
-/usr/sharems/petalogix-ml605.dtb
-/usr/sharems/petalogix-s3adsp1800.dtb
-/usr/sharems/ppc_rom.bin
-/usr/sharems/pxe-e1000.rom
-/usr/sharems/pxe-eepro100.rom
-/usr/sharems/pxe-ne2k_pci.rom
-/usr/sharems/pxe-pcnet.rom
-/usr/sharems/pxe-rtl8139.rom
-/usr/sharems/pxe-virtio.rom
-/usr/sharems/qemu-icon.bmp
-/usr/sharems/qemu_logo_no_text.svg
-/usr/sharems/qemu_vga.ndrv
-/usr/sharems/s390-ccw.img
-/usr/sharems/s390-netboot.img
-/usr/sharems/sgabios.bin
-/usr/sharems/skiboot.lid
-/usr/sharems/slof.bin
-/usr/sharems/spapr-rtas.bin
-/usr/sharems/trace-events-all
-/usr/sharems/u-boot-sam460-20100605.bin
-/usr/sharems/u-boot.e500
-/usr/sharems/vgabios-bochs-display.bin
-/usr/sharems/vgabios-cirrus.bin
-/usr/sharems/vgabios-qxl.bin
-/usr/sharems/vgabios-ramfb.bin
-/usr/sharems/vgabios-stdvga.bin
-/usr/sharems/vgabios-virtio.bin
-/usr/sharems/vgabios-vmware.bin
-/usr/sharems/vgabios.bin
-
-%files bin
-%defattr(-,root,root,-)
-%exclude /usr/bin/qemu-img
-/usr/bin/haswell/ivshmem-client
-/usr/bin/haswell/ivshmem-server
-/usr/bin/haswell/qemu-edid
-/usr/bin/haswell/qemu-ga
-/usr/bin/haswell/qemu-img
-/usr/bin/haswell/qemu-io
-/usr/bin/haswell/qemu-keymap
-/usr/bin/haswell/qemu-nbd
-/usr/bin/haswell/qemu-pr-helper
-/usr/bin/haswell/qemu-system-x86_64
-/usr/bin/haswell/qemu-x86_64
-/usr/bin/haswell/virtfs-proxy-helper
-/usr/bin/ivshmem-client
-/usr/bin/ivshmem-server
-/usr/bin/qemu-edid
-/usr/bin/qemu-ga
-/usr/bin/qemu-io
-/usr/bin/qemu-keymap
-/usr/bin/qemu-nbd
-/usr/bin/qemu-pr-helper
-/usr/bin/qemu-system-x86_64
-/usr/bin/qemu-x86_64
-/usr/bin/virtfs-proxy-helper
-
-%files extras
-%defattr(-,root,root,-)
-/usr/bin/qemu-img
 
 %files libexec
 %defattr(-,root,root,-)
