@@ -6,7 +6,7 @@
 #
 Name     : qemu
 Version  : 3.1.0
-Release  : 97
+Release  : 98
 URL      : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source0  : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source99 : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz.sig
@@ -15,6 +15,7 @@ Group    : Development/Tools
 License  : Apache-2.0 GPL-2.0 GPL-2.0+ GPL-3.0 LGPL-2.0+ LGPL-2.1 MIT
 Requires: qemu-bin = %{version}-%{release}
 Requires: qemu-data = %{version}-%{release}
+Requires: qemu-lib = %{version}-%{release}
 Requires: qemu-libexec = %{version}-%{release}
 Requires: qemu-locales = %{version}-%{release}
 Requires: qemu-setuid = %{version}-%{release}
@@ -42,6 +43,8 @@ BuildRequires : libtool
 BuildRequires : libtool-dev
 BuildRequires : m4
 BuildRequires : numactl-dev
+BuildRequires : rdma-core
+BuildRequires : rdma-core-dev
 BuildRequires : snappy-dev
 BuildRequires : spice
 BuildRequires : spice-dev
@@ -82,6 +85,16 @@ Group: Default
 extras components for the qemu package.
 
 
+%package lib
+Summary: lib components for the qemu package.
+Group: Libraries
+Requires: qemu-data = %{version}-%{release}
+Requires: qemu-libexec = %{version}-%{release}
+
+%description lib
+lib components for the qemu package.
+
+
 %package libexec
 Summary: libexec components for the qemu package.
 Group: Default
@@ -118,17 +131,17 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1547110034
+export SOURCE_DATE_EPOCH=1547112054
 export CFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FCFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 %configure --disable-static --disable-sdl \
+--disable-strip \
 --enable-avx2 \
 --enable-gtk \
 --enable-vnc \
 --enable-kvm \
---disable-strip \
 --target-list='i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user' \
 --enable-spice \
 --enable-rbd \
@@ -146,7 +159,9 @@ export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -mzero-caller-saved-regs=use
 --enable-libiscsi \
 --enable-coroutine-pool \
 --enable-jemalloc \
---enable-numa
+--enable-numa \
+--enable-rdma \
+--enable-modules
 make  %{?_smp_mflags}
 
 unset PKG_CONFIG_PATH
@@ -155,11 +170,11 @@ export CFLAGS="$CFLAGS -m64 -march=haswell"
 export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
 export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 %configure --disable-static --disable-sdl \
+--disable-strip \
 --enable-avx2 \
 --enable-gtk \
 --enable-vnc \
 --enable-kvm \
---disable-strip \
 --target-list='i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user' \
 --enable-spice \
 --enable-rbd \
@@ -177,7 +192,9 @@ export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 --enable-libiscsi \
 --enable-coroutine-pool \
 --enable-jemalloc \
---enable-numa
+--enable-numa \
+--enable-rdma \
+--enable-modules
 make  %{?_smp_mflags}
 popd
 %check
@@ -188,7 +205,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make check || :
 
 %install
-export SOURCE_DATE_EPOCH=1547110034
+export SOURCE_DATE_EPOCH=1547112054
 rm -rf %{buildroot}
 pushd ../buildavx2/
 %make_install_avx2
@@ -325,6 +342,16 @@ popd
 %files extras
 %defattr(-,root,root,-)
 /usr/bin/qemu-img
+
+%files lib
+%defattr(-,root,root,-)
+/usr/lib64/qemu/audio-oss.so
+/usr/lib64/qemu/audio-oss.so.avx2
+/usr/lib64/qemu/block-curl.so
+/usr/lib64/qemu/block-iscsi.so
+/usr/lib64/qemu/block-rbd.so
+/usr/lib64/qemu/ui-gtk.so
+/usr/lib64/qemu/ui-gtk.so.avx2
 
 %files libexec
 %defattr(-,root,root,-)

@@ -32,3 +32,5 @@ libiscsi-dev
 libiscsi
 jemalloc-dev
 curl-dev
+rdma-core-dev
+rdma-core
