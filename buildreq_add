@@ -29,8 +29,6 @@ usbredir-dev
 util-linux-dev
 zlib-dev
 libiscsi-dev
-libiscsi
 jemalloc-dev
 curl-dev
 rdma-core-dev
-rdma-core
