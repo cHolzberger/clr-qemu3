@@ -23,4 +23,5 @@
 --enable-libiscsi
 --enable-coroutine-pool
 --enable-jemalloc
+--enable-numa
 #--enable-curses

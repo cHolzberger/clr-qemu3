@@ -6,7 +6,7 @@
 #
 Name     : qemu
 Version  : 3.1.0
-Release  : 96
+Release  : 97
 URL      : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source0  : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source99 : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz.sig
@@ -25,6 +25,7 @@ BuildRequires : buildreq-cmake
 BuildRequires : buildreq-distutils3
 BuildRequires : buildreq-qmake
 BuildRequires : ceph-dev
+BuildRequires : curl-dev
 BuildRequires : flex
 BuildRequires : glib-dev
 BuildRequires : gtk3
@@ -117,7 +118,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1547108685
+export SOURCE_DATE_EPOCH=1547110034
 export CFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FCFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
@@ -144,7 +145,8 @@ export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -mzero-caller-saved-regs=use
 --enable-opengl \
 --enable-libiscsi \
 --enable-coroutine-pool \
---enable-jemalloc
+--enable-jemalloc \
+--enable-numa
 make  %{?_smp_mflags}
 
 unset PKG_CONFIG_PATH
@@ -174,7 +176,8 @@ export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 --enable-opengl \
 --enable-libiscsi \
 --enable-coroutine-pool \
---enable-jemalloc
+--enable-jemalloc \
+--enable-numa
 make  %{?_smp_mflags}
 popd
 %check
@@ -185,7 +188,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make check || :
 
 %install
-export SOURCE_DATE_EPOCH=1547108685
+export SOURCE_DATE_EPOCH=1547110034
 rm -rf %{buildroot}
 pushd ../buildavx2/
 %make_install_avx2

@@ -31,3 +31,4 @@ zlib-dev
 libiscsi-dev
 libiscsi
 jemalloc-dev
+curl-dev
