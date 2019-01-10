@@ -1,11 +1,14 @@
+--prefix=/opt/qemu-ms
 --disable-sdl
 --disable-strip
+--with-confsuffix="ms"
+--enable-debug
 --extra-cflags="-O3"
 --python=/usr/bin/python
 --enable-gtk
 --enable-vnc
 --enable-kvm
---target-list='x86_64-softmmu'
+--target-list='x86_64-softmmu x86_64-linux-user'
 --enable-spice
 --enable-rbd
 --enable-attr
@@ -25,3 +28,4 @@
 --enable-numa
 --enable-rdma
 --enable-modules
+--enable-vhdx
