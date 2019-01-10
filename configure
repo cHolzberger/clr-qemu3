@@ -1,19 +1,18 @@
 --disable-sdl
 --disable-strip
---enable-avx2
+--extra-cflags="-O3"
+--python=/usr/bin/python
 --enable-gtk
 --enable-vnc
 --enable-kvm
---target-list='i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user'
+--target-list='x86_64-softmmu'
 --enable-spice
 --enable-rbd
---extra-cflags="-O3"
 --enable-attr
 --enable-cap-ng
 --enable-virtfs
 --enable-vhost-net
 --enable-usb-redir
---python=/usr/bin/python
 --enable-seccomp
 --enable-linux-aio
 --enable-tpm
@@ -26,4 +25,3 @@
 --enable-numa
 --enable-rdma
 --enable-modules
-#--enable-curses

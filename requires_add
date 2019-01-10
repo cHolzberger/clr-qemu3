@@ -3,3 +3,5 @@
 libiscsi
 rdma-core
 curl
+xfsprogs
+libcap-ng

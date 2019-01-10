@@ -6,7 +6,7 @@
 #
 Name     : qemu
 Version  : 3.1.0
-Release  : 101
+Release  : 102
 URL      : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source0  : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz
 Source99 : http://wiki.qemu-project.org/download/qemu-3.1.0.tar.xz.sig
@@ -20,8 +20,10 @@ Requires: qemu-libexec = %{version}-%{release}
 Requires: qemu-locales = %{version}-%{release}
 Requires: qemu-setuid = %{version}-%{release}
 Requires: curl
+Requires: libcap-ng
 Requires: libiscsi
 Requires: rdma-core
+Requires: xfsprogs
 BuildRequires : attr-dev
 BuildRequires : automake-dev
 BuildRequires : bison
@@ -31,19 +33,27 @@ BuildRequires : buildreq-qmake
 BuildRequires : ceph-dev
 BuildRequires : curl-dev
 BuildRequires : flex
+BuildRequires : glib
 BuildRequires : glib-dev
+BuildRequires : gnutls-dev
 BuildRequires : gtk3
 BuildRequires : gtk3-dev
+BuildRequires : jemalloc
 BuildRequires : jemalloc-dev
 BuildRequires : libaio-dev
 BuildRequires : libcap-dev
+BuildRequires : libcap-ng
 BuildRequires : libcap-ng-dev
+BuildRequires : libiscsi
 BuildRequires : libiscsi-dev
 BuildRequires : libjpeg-turbo-dev
 BuildRequires : libseccomp-dev
 BuildRequires : libtool
 BuildRequires : libtool-dev
+BuildRequires : lzo-dev
 BuildRequires : m4
+BuildRequires : nfs-utils
+BuildRequires : nfs-utils-dev
 BuildRequires : numactl-dev
 BuildRequires : rdma-core-dev
 BuildRequires : snappy-dev
@@ -52,6 +62,7 @@ BuildRequires : spice-dev
 BuildRequires : spice-protocol
 BuildRequires : usbredir-dev
 BuildRequires : util-linux-dev
+BuildRequires : xfsprogs-dev
 BuildRequires : zlib-dev
 Patch1: configure.patch
 
@@ -132,27 +143,26 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-export SOURCE_DATE_EPOCH=1547119996
+export SOURCE_DATE_EPOCH=1547128607
 export CFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FCFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export FFLAGS="$CFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -mzero-caller-saved-regs=used "
 %configure --disable-static --disable-sdl \
 --disable-strip \
---enable-avx2 \
+--extra-cflags="-O3" \
+--python=/usr/bin/python \
 --enable-gtk \
 --enable-vnc \
 --enable-kvm \
---target-list='i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user' \
+--target-list='x86_64-softmmu' \
 --enable-spice \
 --enable-rbd \
---extra-cflags="-O3" \
 --enable-attr \
 --enable-cap-ng \
 --enable-virtfs \
 --enable-vhost-net \
 --enable-usb-redir \
---python=/usr/bin/python \
 --enable-seccomp \
 --enable-linux-aio \
 --enable-tpm \
@@ -172,20 +182,19 @@ export CXXFLAGS="$CXXFLAGS -m64 -march=haswell"
 export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 %configure --disable-static --disable-sdl \
 --disable-strip \
---enable-avx2 \
+--extra-cflags="-O3" \
+--python=/usr/bin/python \
 --enable-gtk \
 --enable-vnc \
 --enable-kvm \
---target-list='i386-softmmu x86_64-softmmu i386-linux-user x86_64-linux-user' \
+--target-list='x86_64-softmmu' \
 --enable-spice \
 --enable-rbd \
---extra-cflags="-O3" \
 --enable-attr \
 --enable-cap-ng \
 --enable-virtfs \
 --enable-vhost-net \
 --enable-usb-redir \
---python=/usr/bin/python \
 --enable-seccomp \
 --enable-linux-aio \
 --enable-tpm \
@@ -195,7 +204,7 @@ export LDFLAGS="$LDFLAGS -m64 -march=haswell"
 --enable-jemalloc \
 --enable-numa \
 --enable-rdma \
---enable-modules
+--enable-modules --enable-avx2
 make  %{?_smp_mflags}
 popd
 %check
@@ -206,7 +215,7 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 make check || :
 
 %install
-export SOURCE_DATE_EPOCH=1547119996
+export SOURCE_DATE_EPOCH=1547128607
 rm -rf %{buildroot}
 pushd ../buildavx2/
 %make_install_avx2
@@ -224,28 +233,22 @@ popd
 /usr/bin/haswell/ivshmem-server
 /usr/bin/haswell/qemu-edid
 /usr/bin/haswell/qemu-ga
-/usr/bin/haswell/qemu-i386
 /usr/bin/haswell/qemu-img
 /usr/bin/haswell/qemu-io
 /usr/bin/haswell/qemu-keymap
 /usr/bin/haswell/qemu-nbd
 /usr/bin/haswell/qemu-pr-helper
-/usr/bin/haswell/qemu-system-i386
 /usr/bin/haswell/qemu-system-x86_64
-/usr/bin/haswell/qemu-x86_64
 /usr/bin/haswell/virtfs-proxy-helper
 /usr/bin/ivshmem-client
 /usr/bin/ivshmem-server
 /usr/bin/qemu-edid
 /usr/bin/qemu-ga
-/usr/bin/qemu-i386
 /usr/bin/qemu-io
 /usr/bin/qemu-keymap
 /usr/bin/qemu-nbd
 /usr/bin/qemu-pr-helper
-/usr/bin/qemu-system-i386
 /usr/bin/qemu-system-x86_64
-/usr/bin/qemu-x86_64
 /usr/bin/virtfs-proxy-helper
 
 %files data
